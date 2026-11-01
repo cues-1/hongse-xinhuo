@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>红色薪火 · 长征英雄卡牌收集</title>
+<style>
+  :root{
+    --red:#9e1f1f; --deep:#6e0f0f; --deep2:#4a0a0a;
+    --gold:#f0c05a; --gold2:#d9a73a; --cream:#fdf6e3; --ink:#3a2b1e;
+    --sand:#f3e6c8; --card:#fffaf0;
+    --r1:#8a6d3b; --r2:#b8860b; --r3:#c0392b;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(240,192,90,.18), transparent 60%),
+      linear-gradient(160deg, var(--deep2) 0%, var(--deep) 45%, var(--red) 100%);
+    min-height:100vh; display:flex; justify-content:center;
+    background-attachment:fixed;
+  }
+  .starfield{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0;}
+  .starfield i{position:absolute; display:block; color:rgba(240,192,90,.25); font-style:normal;
+    animation:twinkle 3s infinite ease-in-out;}
+  @keyframes twinkle{0%,100%{opacity:.2; transform:scale(.8)}50%{opacity:1; transform:scale(1.15)}}
+  .wrap{position:relative; z-index:1; width:100%; max-width:860px; padding:18px 14px 50px;}
+  header{text-align:center; color:#fff; padding:10px 0 6px;}
+  .badge{display:inline-block; font-family:"KaiTi","STKaiti","楷体",serif; letter-spacing:6px;
+    font-size:13px; background:rgba(240,192,90,.16); border:1px solid rgba(240,192,90,.5);
+    color:var(--gold); border-radius:999px; padding:3px 14px; margin-bottom:8px;}
+  h1{margin:0; font-family:"KaiTi","STKaiti","楷体",serif; font-weight:normal;
+    font-size:34px; letter-spacing:8px; text-shadow:0 2px 8px rgba(0,0,0,.35);}
+  h1 .star{color:var(--gold); font-size:26px; vertical-align:3px;}
+  .sub{margin-top:6px; font-size:13px; color:rgba(255,255,255,.75); letter-spacing:2px;}
+  nav{display:flex; gap:8px; margin:14px 0 12px;}
+  nav button{flex:1; border:1px solid rgba(240,192,90,.55); background:rgba(255,255,255,.06);
+    color:var(--gold); padding:10px 0; font-size:15px; letter-spacing:3px; cursor:pointer;
+    border-radius:10px; transition:.2s; font-family:inherit;}
+  nav button.on{background:var(--gold); color:var(--deep); font-weight:bold;
+    box-shadow:0 2px 10px rgba(240,192,90,.4);}
+  .panel{display:none;}
+  .panel.on{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+  .cardBox{background:var(--cream); border-radius:14px; padding:16px; box-shadow:0 6px 24px rgba(0,0,0,.25);}
+  .tag{display:inline-block; font-size:12px; letter-spacing:2px; color:var(--red);
+    border:1px solid var(--red); border-radius:999px; padding:2px 10px; margin-bottom:8px;}
+  .qTitle{font-family:"KaiTi","STKaiti","楷体",serif; font-size:19px; line-height:1.5; margin:4px 0 12px;}
+  .opt{display:block; width:100%; text-align:left; margin:8px 0; padding:10px 14px; cursor:pointer;
+    border:1.5px solid #d8c9a6; border-radius:10px; background:#fff; font-size:14.5px; font-family:inherit;
+    color:var(--ink); transition:.15s;}
+  .opt:hover:not(:disabled){border-color:var(--gold2); background:#fffaf0;}
+  .opt.correct{background:#e3f3e3; border-color:#3f9d4f; color:#1e6b2c;}
+  .opt.wrong{background:#fbe3e2; border-color:#c0392b; color:#8e1f18;}
+  .opt:disabled{cursor:default;}
+  .explain{margin-top:10px; font-size:13.5px; color:#6b4a2a; line-height:1.7; display:none;}
+  .explain b{color:var(--red);}
+  .btnRow{display:flex; gap:10px; margin-top:12px; align-items:center;}
+  .btn{font-family:inherit; cursor:pointer; border:none; border-radius:10px; padding:10px 18px;
+    font-size:15px; letter-spacing:2px; transition:.15s;}
+  .btn.gold{background:var(--gold); color:var(--deep); font-weight:bold;}
+  .btn.ghost{background:transparent; color:#6b4a2a; border:1.5px dashed #c9b586;}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+  .tickets{font-weight:bold; color:var(--red); background:#fff4d6; border:1px solid var(--gold2);
+    padding:6px 12px; border-radius:999px; margin-left:auto; font-size:14px;}
+  /* 抽卡区 */
+  .drawPanel{margin-top:14px; background:#7c1512; background:linear-gradient(160deg,#8e1814,#6e0f0f);
+    border:1px solid var(--gold); border-radius:14px; padding:14px; color:#fff;}
+  .drawPanel h3{margin:0 0 8px; font-size:15px; letter-spacing:2px; color:var(--gold);
+    font-family:"KaiTi","STKaiti","楷体",serif;}
+  .drawTypes{display:flex; gap:8px;}
+  .drawTypes button{flex:1; border:1px solid rgba(240,192,90,.6); background:rgba(255,255,255,.08);
+    color:#fff; padding:9px 4px; border-radius:9px; cursor:pointer; font-size:13px; letter-spacing:1px; font-family:inherit;}
+  .drawTypes button.on{background:var(--gold); color:var(--deep); font-weight:bold;}
+  /* 图鉴 */
+  .setBlock{background:var(--cream); border-radius:14px; padding:14px; margin-bottom:14px;
+    box-shadow:0 4px 16px rgba(0,0,0,.2);}
+  .setHead{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .setHead h2{margin:0; font-family:"KaiTi","STKaiti","楷体",serif; font-size:19px; letter-spacing:2px; color:var(--deep);}
+  .setHead .p{font-size:13px; color:#7a5c2e;}
+  .bar{height:8px; background:#e6d6b0; border-radius:99px; flex:1; min-width:100px; overflow:hidden;}
+  .bar span{display:block; height:100%; background:linear-gradient(90deg,var(--gold2),var(--gold)); width:0%; transition:.4s;}
+  .setHead .done{font-size:12px; color:#3f9d4f; font-weight:bold;}
+  .unlock{border:1px solid #3f9d4f; background:#e9f6e6; color:#1e6b2c; font-size:12px; cursor:pointer;
+    border-radius:999px; padding:4px 12px; font-family:inherit;}
+  .slots{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:10px; margin-top:12px;}
+  .slot{aspect-ratio:5/7; border-radius:8px; position:relative; overflow:hidden;
+    background:repeating-linear-gradient(45deg,#efe3c2 0 6px,#e9dcb8 6px 12px);
+    border:1.5px dashed #c9b586; display:flex; align-items:center; justify-content:center;
+    color:#b39c6e; font-size:20px;}
+  .slot.have{background:var(--card); border:1.5px solid var(--gold2); box-shadow:0 2px 8px rgba(0,0,0,.15);}
+  .slot.have .cnt{position:absolute; right:3px; top:1px; font-size:10px; color:#8a6d3b; background:#fff;
+    border-radius:99px; padding:0 4px;}
+  /* 卡牌（图鉴缩略版/抽卡大卡共用视觉） */
+  .miniCard{width:100%; height:100%; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; padding:6px; text-align:center; gap:4px; position:relative;}
+  .miniCard .ty{font-size:10px; letter-spacing:1px; color:var(--red); border:1px solid var(--red);
+    border-radius:99px; padding:0 6px;}
+  .miniCard .ti{font-family:"KaiTi","STKaiti","楷体",serif; font-size:14px; font-weight:bold; color:var(--ink);}
+  .miniCard .ye{font-size:10px; color:#8a6d3b;}
+  .miniCard .rar{position:absolute; top:4px; right:5px; font-size:12px;}
+  .rar1{color:var(--r1);} .rar2{color:var(--r2);} .rar3{color:var(--r3);}
+  /* 故事 */
+  .storyBox{background:var(--cream); border-radius:14px; padding:18px; box-shadow:0 4px 16px rgba(0,0,0,.2);}
+  .storyItem{border:1px solid #e0cfa4; border-radius:12px; padding:14px; margin-bottom:12px; background:#fffaf0;}
+  .storyItem.lock{opacity:.75; background:#f4ecd8;}
+  .storyItem h3{margin:0 0 6px; font-family:"KaiTi","STKaiti","楷体",serif; font-size:17px; color:var(--deep);}
+  .storyItem .body{font-size:13.5px; line-height:1.9; color:#4a3a26; white-space:pre-line;}
+  .lockNote{font-size:12.5px; color:#8a6d3b;}
+  /* 抽卡大图模态 */
+  .mask{position:fixed; inset:0; background:rgba(20,5,5,.72); display:none; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .mask.on{display:flex;}
+  .bigCard{width:230px; height:320px; perspective:1000px;}
+  .flip{position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .7s ease;}
+  .flip.turn{transform:rotateY(180deg);}
+  .face{position:absolute; inset:0; backface-visibility:hidden; border-radius:12px; overflow:hidden;}
+  .face.back{background:linear-gradient(160deg,var(--red),var(--deep)); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; color:var(--gold); border:2px solid var(--gold);}
+  .face.back .star{font-size:52px;}
+  .face.back .t{letter-spacing:4px; margin-top:10px; font-family:"KaiTi","STKaiti","楷体",serif; font-size:16px;}
+  .face.front{transform:rotateY(180deg); background:var(--card); border:2px solid var(--gold2);}
+  .front .topline{display:flex; justify-content:space-between; align-items:center; padding:8px 10px 0;}
+  .front .ty2{font-size:11px; letter-spacing:2px; color:var(--red); border:1px solid var(--red);
+    border-radius:99px; padding:1px 8px;}
+  .front .rar2{font-size:14px;}
+  .front .ct{text-align:center; padding:8px 12px;}
+  .front .ti2{font-family:"KaiTi","STKaiti","楷体",serif; font-size:24px; margin:6px 0 2px; color:var(--deep);}
+  .front .ye2{font-size:12px; color:#8a6d3b;}
+  .front .divider{height:1px; background:linear-gradient(90deg,transparent,var(--gold2),transparent); margin:8px 12px;}
+  .front .fact{font-size:12px; line-height:1.7; color:#4a3a26; padding:0 12px; text-align:justify;}
+  .front .foot{position:absolute; bottom:0; left:0; right:0; text-align:center; font-size:10px; color:#b39c6e; padding:4px;}
+  .mask .close{position:fixed; right:26px; top:20px; color:#fff; font-size:28px; cursor:pointer; background:none; border:none;}
+  .banner{position:fixed; left:50%; top:24px; transform:translateX(-50%); background:linear-gradient(135deg,var(--gold),var(--gold2));
+    color:var(--deep); font-weight:bold; padding:12px 26px; border-radius:12px; z-index:60; font-size:16px; letter-spacing:2px;
+    box-shadow:0 6px 24px rgba(0,0,0,.35); animation:pop .4s ease;}
+  @keyframes pop{from{transform:translateX(-50%) scale(.6); opacity:0}to{transform:translateX(-50%) scale(1); opacity:1}}
+  .footnote{text-align:center; color:rgba(255,255,255,.5); font-size:11px; margin-top:16px; letter-spacing:1px;}
+  .resetBtn{background:none; border:none; color:rgba(255,255,255,.38); font-size:11px; cursor:pointer;
+    font-family:inherit; text-decoration:underline; text-underline-offset:3px; padding:4px 8px;}
+  .resetBtn:hover{color:rgba(240,192,90,.8);}
+  @media (max-width:520px){
+    h1{font-size:26px; letter-spacing:5px;}
+    .sub{font-size:12px;}
+    .qTitle{font-size:17px;}
+    .slots{grid-template-columns:repeat(auto-fill,minmax(84px,1fr));}
+  }
+</style>
+</head>
+<body>
+<div class="starfield" id="starfield"></div>
+<div class="wrap">
+  <header>
+    <div class="badge">✦ 红色文化主题 · 互动学习 ✦</div>
+    <h1><span class="star">★</span> 红色薪火 <span class="star">★</span></h1>
+    <div class="sub">长征英雄卡牌收集 · 答题抽卡 · 集齐解锁长征故事</div>
+    <div class="sub" id="globalProgress">已集齐：0 / 3 套卡组</div>
+  </header>
+
+  <nav id="nav">
+    <button data-tab="quiz" class="on">🗡 答题闯关</button>
+    <button data-tab="book">📖 我的图鉴</button>
+    <button data-tab="story">🔥 长征故事</button>
+  </nav>
+
+  <!-- 答题闯关 -->
+  <section class="panel on" id="tab-quiz">
+    <div class="cardBox">
+      <span class="tag" id="qType">事件卡</span>
+      <div class="qTitle" id="qTitle">正在准备题目……</div>
+      <div id="qOpts"></div>
+      <div class="explain" id="qExplain"></div>
+      <div class="btnRow">
+        <button class="btn ghost" id="btnSkip" style="display:none">跳过本题</button>
+        <button class="btn gold" id="btnNext" style="display:none">下一题 →</button>
+        <span class="tickets">🎟 抽卡机会：<b id="ticketNum">0</b></span>
+      </div>
+    </div>
+
+    <div class="drawPanel" id="drawPanel">
+      <h3>✦ 答对即可获得抽卡机会，选择卡组抽取卡牌 ✦</h3>
+      <div class="drawTypes" id="drawTypes"></div>
+      <div class="btnRow" style="margin-top:10px">
+        <button class="btn gold" id="btnDraw" disabled>🃏 抽 1 张（需 1 次机会）</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 图鉴 -->
+  <section class="panel" id="tab-book">
+    <div id="bookSets"></div>
+  </section>
+
+  <!-- 故事 -->
+  <section class="panel" id="tab-story">
+    <div class="storyBox" id="storyList"></div>
+  </section>
+
+  <div class="footnote">红色薪火 · 纪念红军长征 · 学史明理 知史爱国</div>
+  <div style="text-align:center; margin-top:6px">
+    <button id="btnReset" class="resetBtn">重置进度（清空卡牌与故事）</button>
+  </div>
+</div>
+
+<!-- 抽卡大图模态 -->
+<div class="mask" id="mask">
+  <button class="close" id="maskClose">✕</button>
+  <div class="bigCard"><div class="flip" id="flip">
+    <div class="face back">
+      <div class="star">★</div>
+      <div class="t">红色薪火</div>
+    </div>
+    <div class="face front" id="front"></div>
+  </div></div>
+</div>
+
+<script>
+"use strict";
+/* ================= 数据 ================= */
+const SETS = {
+  event: {name:"长征大事记", full:"事件卡 · 长征大事记", color:"#9e1f1f"},
+  hero:  {name:"铁血将士",  full:"英雄卡 · 铁血将士",  color:"#8a1f4d"},
+  quote: {name:"薪火名言",  full:"语录卡 · 薪火名言",  color:"#b8860b"},
+};
+
+const CARDS = [
+  // ==== 事件卡 ====
+  {id:"e1", set:"event", title:"湘江战役", year:"1934.11", rarity:3,
+   fact:"长征中最惨烈的一仗。中央红军从8.6万余人锐减至3万余人，鲜血染红湘江。"},
+  {id:"e2", set:"event", title:"遵义会议", year:"1935.01", rarity:3,
+   fact:"生死攸关的转折点，确立了毛泽东在党中央和红军中的领导地位，挽救了党、挽救了中国革命。"},
+  {id:"e3", set:"event", title:"四渡赤水", year:"1935.01-03", rarity:2,
+   fact:"毛泽东军事指挥的得意之笔，红军在赤水河两岸灵活穿插，跳出数十万敌军的包围圈。"},
+  {id:"e4", set:"event", title:"巧渡金沙江", year:"1935.05", rarity:1,
+   fact:"红军在皎平渡等渡口靠几条小船昼夜抢渡七昼夜，成功摆脱数十万追兵。"},
+  {id:"e5", set:"event", title:"飞夺泸定桥", year:"1935.05", rarity:2,
+   fact:"红四团昼夜疾行240里，22名勇士攀着13根铁索强渡大渡河，夺取泸定桥。"},
+  {id:"e6", set:"event", title:"翻越夹金山", year:"1935.06", rarity:1,
+   fact:"红军翻越长征中第一座大雪山夹金山，此后更穿越茫茫草地，用双脚丈量了万水千山。"},
+  // ==== 英雄卡 ====
+  {id:"h1", set:"hero", title:"陈树湘", year:"1905-1934", rarity:3,
+   fact:"红34师师长。湘江战役重伤被俘后“断肠明志”，把肠子绞断，宁死不屈，年仅29岁。"},
+  {id:"h2", set:"hero", title:"董振堂", year:"1895-1937", rarity:2,
+   fact:"红五军团军团长，长征中担任后卫，被誉为“铁流后卫”，后高台血战壮烈牺牲。"},
+  {id:"h3", set:"hero", title:"张思德", year:"1915-1944", rarity:1,
+   fact:"参加长征的中央警卫团战士，后因烧炭窑塌牺牲。毛泽东为他写下《为人民服务》。"},
+  {id:"h4", set:"hero", title:"贺子珍", year:"1909-1984", rarity:2,
+   fact:"女红军战士。长征途中为掩护伤员被敌机炸伤，身上留下了17块弹片。"},
+  {id:"h5", set:"hero", title:"徐特立", year:"1877-1968", rarity:1,
+   fact:"教育家、长沙师范校长，57岁参加长征，是长征队伍中年龄最大的战士之一。"},
+  {id:"h6", set:"hero", title:"杨得志", year:"1911-1994", rarity:2,
+   fact:"红一团团长，率十七勇士强渡大渡河、突破天险，打开北上通路。"},
+  // ==== 语录卡 ====
+  {id:"q1", set:"quote", title:"红军不怕远征难", year:"《七律·长征》", rarity:3,
+   fact:"红军不怕远征难，万水千山只等闲。——毛泽东。以革命英雄主义和乐观主义写出长征之艰难与豪迈。"},
+  {id:"q2", set:"quote", title:"三军过后尽开颜", year:"《七律·长征》", rarity:1,
+   fact:"更喜岷山千里雪，三军过后尽开颜。——长征终于胜利在望时的喜悦跃然纸上。"},
+  {id:"q3", set:"quote", title:"而今迈步从头越", year:"《忆秦娥·娄山关》", rarity:2,
+   fact:"雄关漫道真如铁，而今迈步从头越。——写红军攻克娄山关，也写从头再来的决心。"},
+  {id:"q4", set:"quote", title:"野菜充饥志越坚", year:"《长征组歌·过雪山草地》", rarity:2,
+   fact:"风雨浸衣骨更硬，野菜充饥志越坚。——雪山草地的艰辛与红军钢铁般的意志。"},
+  {id:"q5", set:"quote", title:"一不怕苦，二不怕死", year:"红军口号", rarity:1,
+   fact:"红军在长征中凝练出的革命英雄主义口号，激励一代代人迎难而上。"},
+  {id:"q6", set:"quote", title:"敢教日月换新天", year:"《七律·到韶山》", rarity:3,
+   fact:"为有牺牲多壮志，敢教日月换新天。——牺牲与奋斗换来新天地，红色精神薪火相传。"},
+];
+
+const QUESTIONS = [
+  {set:"event", q:"中央红军开始长征的时间是？",
+   opts:["1934年10月","1935年1月","1936年10月","1933年10月"], a:0,
+   explain:"1934年10月，中央红军8.6万余人从江西于都等地出发，踏上漫漫长征路。"},
+  {set:"event", q:"毛泽东的领导地位是在哪一次会议上确立的？",
+   opts:["八七会议","遵义会议","洛川会议","瓦窑堡会议"], a:1,
+   explain:"1935年1月遵义会议，确立了毛泽东在党中央和红军的领导地位，是生死攸关的转折点。"},
+  {set:"event", q:"长征中打得最惨烈、损失最重的一仗是？",
+   opts:["湘江战役","四渡赤水","飞夺泸定桥","巧渡金沙江"], a:0,
+   explain:"湘江战役中中央红军由8.6万余人锐减至3万余人，血染湘江，教训刻骨。"},
+  {set:"event", q:"标志着长征胜利结束的事件是？",
+   opts:["三大主力在甘肃会宁等地会师","中央红军到达陕北吴起镇","飞夺泸定桥","强渡大渡河"], a:0,
+   explain:"1936年10月，红军三大主力在甘肃会宁等地会师，长征胜利结束。"},
+  {set:"event", q:"飞夺泸定桥时，红军勇士是怎样过桥的？",
+   opts:["攀着铁索爬过去","坐木船渡过去","搭浮桥过去","游水过去"], a:0,
+   explain:"22名勇士攀着13根铁索，冒着枪林弹雨强渡大渡河，夺取泸定桥。"},
+  {set:"event", q:"中央红军长征中翻越的第一座大雪山是？",
+   opts:["夹金山","昆仑山","岷山","六盘山"], a:0,
+   explain:"1935年6月红军翻越夹金山，之后又穿越了茫茫松潘草地。"},
+  {set:"hero", q:"湘江战役中“断肠明志”、壮烈牺牲的红34师师长是？",
+   opts:["陈树湘","董振堂","张思德","杨得志"], a:0,
+   explain:"陈树湘师长重伤被俘后宁死不屈，把肠子绞断，用生命诠释了信仰。"},
+  {set:"hero", q:"毛泽东为哪位牺牲的普通战士写下了《为人民服务》？",
+   opts:["张思德","雷锋","白求恩","董存瑞"], a:0,
+   explain:"张思德参加过长征，后因烧炭窑塌牺牲，年仅29岁。毛泽东在追悼会上作了《为人民服务》演讲。"},
+  {set:"hero", q:"被称为红军“铁流后卫”的是？",
+   opts:["红五军团","红一军团","红三军团","红九军团"], a:0,
+   explain:"红五军团在长征中一直在最后面殿后，掩护主力前进，被誉为“铁流后卫”。"},
+  {set:"hero", q:"长征队伍中年龄最大的战士之一、57岁参加长征的教育家是？",
+   opts:["徐特立","谢觉哉","董必武","林伯渠"], a:0,
+   explain:"徐特立是毛泽东在长沙师范的先生，57岁随军长征，被誉为“长征路上最年长的战士”。"},
+  {set:"hero", q:"女红军贺子珍长征途中为掩护伤员身中多少块弹片？",
+   opts:["17块","7块","27块","3块"], a:0,
+   explain:"1935年4月，贺子珍为掩护伤员被敌机轰炸，身中17块弹片，多数伴随一生未能取出。"},
+  {set:"hero", q:"率十七勇士强渡大渡河的红一团团长是？",
+   opts:["杨得志","杨成武","王开湘","刘亚楼"], a:0,
+   explain:"红一团团长杨得志组织十七勇士强渡大渡河，突破天险，为红军北上打开通路。"},
+  {set:"quote", q:"“红军不怕远征难，万水千山只等闲”出自？",
+   opts:["毛泽东《七律·长征》","朱德《太行春感》","陈毅《梅岭三章》","《长征组歌》"], a:0,
+   explain:"这是毛泽东在长征即将胜利时写下的《七律·长征》，气势磅礴、革命乐观主义尽显。"},
+  {set:"quote", q:"“雄关漫道真如铁，而今迈步从头越”出自哪首词？",
+   opts:["《忆秦娥·娄山关》","《沁园春·雪》","《清平乐·六盘山》","《卜算子·咏梅》"], a:0,
+   explain:"1935年2月红军二渡赤水再克娄山关，毛泽东写下《忆秦娥·娄山关》。"},
+  {set:"quote", q:"“风雨浸衣骨更硬，野菜充饥志越坚”出自？",
+   opts:["《长征组歌·过雪山草地》","《七律·到韶山》","《西江月·井冈山》","《游击队歌》"], a:0,
+   explain:"这句歌词写的是红军爬雪山过草地的艰苦岁月，越是艰难，意志越坚定。"},
+  {set:"quote", q:"“更喜岷山千里雪，三军过后尽开颜”中的“三军”指的是？",
+   opts:["红一、红二、红四方面军","陆、海、空军","红军的三个师","全体将士"], a:0,
+   explain:"“三军”指参加长征的红一方面军、红二方面军和红四方面军。"},
+];
+
+const STORIES = {
+  event: {title:"《翻越万水千山——长征大事记》", body:
+"1934年10月，中央红军8.6万余人从江西出发，踏上战略转移的漫漫征途。\n\n"+
+"湘江血战，红军付出惨重代价，从8.6万人锐减到3万余人，血的事实让全军认识到必须改变错误领导。1935年1月遵义会议，毛泽东重新回到领导岗位，红军从此转危为安。四渡赤水、巧渡金沙江、强渡大渡河、飞夺泸定桥，红军在崇山峻岭间迂回穿插，把“不可能”走成了“可能”。\n\n"+
+"6月翻越夹金山，8月穿越松潘草地，茫茫雪原、泥泞沼泽，无数战士倒在了黎明之前。1935年10月，中央红军到达陕北；1936年10月，三大主力在甘肃会宁等地会师，长征胜利结束。\n\n"+
+"两万五千里，不仅是一次军事奇迹，更是一座精神丰碑——这就是伟大的长征精神。"},
+  hero: {title:"《铁血铸魂——英雄谱》", body:
+"陈树湘，红34师师长。湘江战役中，红34师奉命殿后掩护，全师几乎打光。陈树湘腹部中弹被俘，押送途中，他趁敌不备从腹部伤口掏出肠子用力绞断，壮烈牺牲，年仅29岁。“断肠明志”，是他留给历史最悲壮的一笔。\n\n"+
+"董振堂，红五军团军团长。长征中红五军团总是在最后面断后，用生命为主力筑起钢铁防线，“铁流后卫”由此得名。河西走廊高台战役中，他率部血战九天九夜，壮烈殉国。\n\n"+
+"张思德，一名普通的中央警卫团战士，走完了长征，后来在陕北烧炭时因炭窑塌方牺牲。毛泽东在追悼会上作了著名的《为人民服务》——一个普通战士的名字，从此与一种精神连在一起。\n\n"+
+"还有贺子珍身中17块弹片为掩护战友，徐特立57岁拄杖长征，杨得志率十七勇士强渡大渡河……英雄不是天生的钢铁，而是当担子压到肩上时，选择不后退的人。"},
+  quote: {title:"《薪火之言——语录背后的长征》", body:
+"“红军不怕远征难，万水千山只等闲。”——走完长征，毛泽东的诗里没有抱怨，只有豪迈。这种革命乐观主义，让红军在最艰难的时刻仍然相信：胜利属于我们。\n\n"+
+"“风雨浸衣骨更硬，野菜充饥志越坚。”——雪山草地里，没有粮食吃野菜、啃皮带，但没有一个人想过放弃。身体的极限，反而磨砺出钢铁般的意志。\n\n"+
+"“一不怕苦，二不怕死。”——这不是一句空话，而是红军将士用双脚、用生命写下的誓言。\n\n"+
+"“雄关漫道真如铁，而今迈步从头越。”——真正强大的人，不是没有失败过、跌倒过，而是跌倒之后还能“从头越”。今天我们学习长征精神，学的就是这股不认输的劲：面对困难，敢闯敢干；面对挫折，重新出发。\n\n"+
+"薪火相传，一代人有一代人的长征。愿你我都能接过这把火炬。"},
+};
+
+/* ================= 状态 ================= */
+const KEY = "hongse-xinhuo-v1";
+let state = {tickets:0, owned:{}, unlocked:[], seen:[]};
+try{
+  const saved = JSON.parse(localStorage.getItem(KEY));
+  if(saved && typeof saved.owned === "object") state = saved;
+}catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+function setCount(){ return Object.keys(state.owned).length; }
+function setDone(key){ return CARDS.filter(c=>c.set===key).every(c=>state.owned[c.id]); }
+function ownedOf(setKey){ return CARDS.filter(c=>c.set===setKey && state.owned[c.id]); }
+
+/* ================= 答题 ================= */
+let qQueue = [];
+function nextQuestion(){
+  const pool = QUESTIONS.filter(q=>!state.seen.includes(q.q));
+  let q;
+  if(pool.length) q = pool[Math.floor(Math.random()*pool.length)];
+  else { state.seen = []; save(); q = QUESTIONS[Math.floor(Math.random()*QUESTIONS.length)]; }
+  renderQuestion(q);
+}
+function renderQuestion(q){
+  state.seen.push(q.q); save();
+  const typeName = {event:"事件卡", hero:"英雄人物卡", quote:"精神语录卡"}[q.set];
+  document.getElementById("qType").textContent = typeName;
+  document.getElementById("qTitle").textContent = q.q;
+  const box = document.getElementById("qOpts");
+  box.innerHTML = "";
+  q.opts.forEach((op,i)=>{
+    const b = document.createElement("button");
+    b.className = "opt"; b.textContent = op;
+    b.onclick = ()=>answer(q,i,b);
+    box.appendChild(b);
+  });
+  document.getElementById("qExplain").style.display = "none";
+  document.getElementById("qExplain").innerHTML = "";
+  document.getElementById("btnNext").style.display = "none";
+  document.getElementById("btnSkip").style.display = (qQueue.length>1)?"none":"none";
+  window._curQ = q;
+}
+function answer(q, idx, el){
+  const opts = [...document.querySelectorAll("#qOpts .opt")];
+  opts.forEach(o=>o.disabled = true);
+  const ok = idx === q.a;
+  opts[q.a].classList.add("correct");
+  if(!ok) el.classList.add("wrong");
+  const ex = document.getElementById("qExplain");
+  ex.innerHTML = (ok ? "<b>✓ 回答正确！</b>获得 1 次抽卡机会。" : "<b>✗ 回答错误</b>，正确答案是：" + opts[q.a].textContent + "。") + "<br>" + q.explain;
+  ex.style.display = "block";
+  if(ok){
+    state.tickets += 1; save();
+    setDrawType(q.set); updateTickets(); renderDrawTypes();
+    document.getElementById("drawPanel").scrollIntoView({behavior:"smooth", block:"nearest"});
+  }
+  const n = document.getElementById("btnNext");
+  n.style.display = "inline-block";
+  n.onclick = ()=>{ n.style.display="none"; nextQuestion(); };
+}
+
+/* ================= 抽卡 ================= */
+let drawType = "event";
+function setDrawType(t){ drawType = t; renderDrawTypes(); }
+function renderDrawTypes(){
+  const box = document.getElementById("drawTypes");
+  box.innerHTML = "";
+  Object.keys(SETS).forEach(k=>{
+    const b = document.createElement("button");
+    b.className = k===drawType ? "on" : "";
+    b.textContent = SETS[k].full;
+    b.onclick = ()=>{ drawType = k; renderDrawTypes(); };
+    box.appendChild(b);
+  });
+  document.getElementById("btnDraw").disabled = state.tickets <= 0;
+}
+function updateTickets(){ document.getElementById("ticketNum").textContent = state.tickets; }
+
+function drawCard(){
+  if(state.tickets <= 0) return;
+  state.tickets -= 1;
+  const pool = CARDS.filter(c=>c.set===drawType);
+  // 权重：传说3星 25%、2星 35%、1星 40%（按稀有度加权随机）
+  const weights = pool.map(c=> c.rarity===3 ? 25 : c.rarity===2 ? 35 : 40);
+  let t = 0; const sum = weights.reduce((a,b)=>a+b,0);
+  const r = Math.random()*sum;
+  let pick = pool[0];
+  for(let i=0;i<pool.length;i++){ t += weights[i]; if(r < t){ pick = pool[i]; break; } }
+  state.owned[pick.id] = (state.owned[pick.id]||0) + 1;
+  const isNew = state.owned[pick.id] === 1;
+  save();
+  showCardModal(pick, isNew);
+  updateTickets(); updateAll(); renderDrawTypes();
+  if(isNew && !state.unlocked.includes(pick.set) && setDone(pick.set)){
+    state.unlocked.push(pick.set); save();
+    setTimeout(()=>unlockBanner(pick.set), 2600);
+  }
+  if(setCount() === CARDS.length) setTimeout(()=>finishBanner(), 2600);
+}
+
+function showCardModal(card, isNew){
+  const f = document.getElementById("front");
+  const rar = {1:"★★☆", 2:"★★★☆", 3:"★★★★★"}[card.rarity] || "★★☆";
+  const rareName = {1:"普通", 2:"稀有", 3:"传说"}[card.rarity];
+  f.innerHTML =
+    '<div class="topline"><span class="ty2">'+SETS[card.set].name+'</span>'+
+    '<span class="rar2 '+(card.rarity===3?'rar3':card.rarity===2?'rar2':'rar1')+'">'+rar+'</span></div>'+
+    '<div class="ct"><div class="ti2">'+card.title+'</div><div class="ye2">'+card.year+' · '+rareName+'</div></div>'+
+    '<div class="divider"></div>'+
+    '<div class="fact">'+card.fact+'</div>'+
+    '<div class="foot">'+ (isNew ? "✦ 新卡收藏！" : "已有卡牌，重复 +1") +' · 红色薪火</div>';
+  const flip = document.getElementById("flip");
+  flip.classList.remove("turn");
+  document.getElementById("mask").classList.add("on");
+  setTimeout(()=>flip.classList.add("turn"), 120);
+}
+
+/* ================= 图鉴 ================= */
+function updateAll(){ renderBook(); renderStories(); updateGlobal(); }
+function updateGlobal(){
+  const n = state.unlocked.length;
+  document.getElementById("globalProgress").textContent = "已集齐：" + n + " / 3 套卡组";
+}
+function renderBook(){
+  const box = document.getElementById("bookSets");
+  box.innerHTML = "";
+  Object.keys(SETS).forEach(k=>{
+    const cards = CARDS.filter(c=>c.set===k);
+    const owned = ownedOf(k);
+    const done = setDone(k);
+    const div = document.createElement("div");
+    div.className = "setBlock";
+    const pct = Math.round(owned.length/cards.length*100);
+    let head =
+      '<div class="setHead"><h2>'+SETS[k].full+'</h2>'+
+      '<div class="p">'+owned.length+' / '+cards.length+' 张</div>'+
+      '<div class="bar"><span style="width:'+pct+'%"></span></div>'+
+      (done ? '<span class="done">✔ 已集齐</span>' : '<span class="done" style="color:#b8860b">收集完成可解锁故事</span>')+
+      '</div><div class="slots">';
+    cards.forEach(c=>{
+      if(state.owned[c.id]){
+        head += '<div class="slot have"><div class="miniCard">'+
+          '<span class="ty">'+SETS[c.set].name+'</span>'+
+          '<span class="ti">'+c.title+'</span>'+
+          '<span class="ye">'+c.year+'</span>'+
+          '<span class="rar '+(c.rarity===3?'rar3':c.rarity===2?'rar2':'rar1')+'">'+(c.rarity===3?"★★★★★":c.rarity===2?"★★★☆":"★★☆")+'</span>'+
+          '<div class="cnt">×'+state.owned[c.id]+'</div>'+
+          '</div></div>';
+      }else{
+        head += '<div class="slot">?</div>';
+      }
+    });
+    head += '</div>';
+    div.innerHTML = head;
+    box.appendChild(div);
+  });
+}
+
+/* ================= 故事 ================= */
+function renderStories(){
+  const box = document.getElementById("storyList");
+  box.innerHTML = "";
+  Object.keys(SETS).forEach(k=>{
+    const st = STORIES[k];
+    const done = setDone(k);
+    const unlocked = state.unlocked.includes(k);
+    const div = document.createElement("div");
+    div.className = "storyItem" + (unlocked?"":" lock");
+    if(unlocked){
+      div.innerHTML = '<h3>✦ '+st.title+'</h3><div class="body">'+st.body+'</div>';
+    }else{
+      div.innerHTML = '<h3>🔒 '+st.title+'</h3><div class="body" style="display:none"></div>'+
+        '<div class="lockNote">📌 集齐「'+SETS[k].full+'」全部 6 张即可解锁本篇故事。当前进度：'+
+        ownedOf(k).length+' / 6。</div>';
+    }
+    box.appendChild(div);
+  });
+}
+
+/* ================= 弹窗横幅 ================= */
+function unlockBanner(setKey){
+  showBanner("🔥 集齐「"+SETS[setKey].full+"」！长征故事已解锁，快去「长征故事」页看看吧！");
+}
+function finishBanner(){ showBanner("🎉 18 张卡牌全部集齐！你就是「红色薪火传承者」！"); }
+function showBanner(msg){
+  const old = document.querySelector(".banner");
+  if(old) old.remove();
+  const b = document.createElement("div");
+  b.className = "banner"; b.textContent = msg;
+  document.body.appendChild(b);
+  setTimeout(()=>{ if(b.parentNode) b.parentNode.removeChild(b); }, 4000);
+}
+
+/* ================= 初始化 ================= */
+function buildStars(){
+  const f = document.getElementById("starfield");
+  f.innerHTML = "";
+  const chars = ["★","✦","☆","✧","♦"];
+  for(let i=0;i<40;i++){
+    const s = document.createElement("i");
+    s.textContent = chars[i%chars.length];
+    s.style.left = Math.random()*100 + "%";
+    s.style.top = Math.random()*100 + "%";
+    s.style.fontSize = (8+Math.random()*18) + "px";
+    s.style.animationDelay = (Math.random()*3) + "s";
+    f.appendChild(s);
+  }
+}
+function init(){
+  buildStars();
+  document.querySelectorAll("#nav button").forEach(btn=>{
+    btn.onclick = ()=>{
+      document.querySelectorAll("#nav button").forEach(b=>b.classList.remove("on"));
+      btn.classList.add("on");
+      document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));
+      document.getElementById("tab-"+btn.dataset.tab).classList.add("on");
+    };
+  });
+  document.getElementById("maskClose").onclick = ()=>document.getElementById("mask").classList.remove("on");
+  document.getElementById("mask").onclick = (e)=>{ if(e.target.id==="mask") document.getElementById("mask").classList.remove("on"); };
+  document.getElementById("btnDraw").onclick = drawCard;
+  document.getElementById("btnReset").onclick = ()=>{
+    if(confirm("确定要清空全部卡牌收藏、抽卡机会和故事解锁进度吗？此操作不可恢复。")){
+      try{ localStorage.removeItem(KEY); }catch(e){}
+      location.reload();
+    }
+  };
+  renderDrawTypes(); updateTickets(); updateAll(); nextQuestion();
+}
+init();
+</script>
+</body>
+</html>
